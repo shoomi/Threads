@@ -1,3 +1,5 @@
+package creation;
+
 class SomeClass extends Thread {
     @Override
     public void run() {

@@ -1,3 +1,5 @@
+package creation;
+
 class SomeThing implements Runnable {
     @Override
     public void run() {
