@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LockCondition {
 
     private static Lock lock = new ReentrantLock();
+    // це своєрідна заміна wait, notify
     private static Condition condition = lock.newCondition();
     private static int account = 0;
 

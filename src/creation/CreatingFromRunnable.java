@@ -10,6 +10,6 @@ class SomeThing implements Runnable {
 public class CreatingFromRunnable {
 
     public static void main(String[] args) {
-        new Thread(new SomeThing()).run();
+        new Thread(new SomeThing()).start();
     }
 }

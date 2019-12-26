@@ -10,6 +10,6 @@ class SomeClass extends Thread {
 public class CreatingFromThread {
 
     public static void main(String[] args) {
-        new SomeClass().run();
+        new SomeClass().start();
     }
 }

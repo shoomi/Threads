@@ -4,6 +4,7 @@ public class Main {
 
     public static void main(String[] args) {
         Message msg = new Message("обработать");
+
         Waiter waiter = new Waiter(msg);
         new Thread(waiter, "waiter").start();
 

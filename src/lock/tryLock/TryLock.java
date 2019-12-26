@@ -5,7 +5,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class TryLock {
 
-    private static Lock lock = new ReentrantLock();
+    private static Lock lock = new ReentrantLock(true);
 
     public static void main(String[] args) {
         new MyTread().start();
