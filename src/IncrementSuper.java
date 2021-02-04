@@ -6,9 +6,10 @@ public class IncrementSuper {
 
     private static int count;
     private static Lock lock = new ReentrantLock();
+    private static Semaphore sem = new Semaphore(4);  // семафор задає ресурс для потоку, але якщо присутні інші потоки яким семафор не заданий то послідовність виконання не гарантується
 
     private static void runWithSemaphore() {
-        Semaphore sem = new Semaphore(1);  // семафор задає ресурс для потоку, але якщо присутні інші потоки яким семафор не заданий то послідовність виконання не гарантується
+
         IncrementingWithSemaphore in1 = new IncrementingWithSemaphore();
         IncrementingWithSemaphore in2 = new IncrementingWithSemaphore();
         in1.sem = sem;
@@ -41,11 +42,11 @@ public class IncrementSuper {
 
     public static void main(String[] args) throws InterruptedException {
         // краще видно якщо лишити лише один метод для виконання
-        runSimple();
+//        runSimple();
 //        runWithJoinSynchronized();
 //        runSynchronized();
 //        runWithLock();
-//        runWithSemaphore();
+        runWithSemaphore();
     }
 
     static class IncrementingWithSemaphore extends Thread {
@@ -66,7 +67,6 @@ public class IncrementSuper {
                 e.printStackTrace();
             }
         }
-
     }
 
     static class SimpleIncrementing extends Thread {
@@ -88,13 +88,16 @@ public class IncrementSuper {
 
         @Override
         public void run() {
-            lock.lock();
-            for (int i = 0; i < 20; i++) {
-                count++;
-                k++;
-                System.out.println(currentThread().getName() + " k=" + k + "    count=" + count + "      lock");
+            try {
+                lock.lock();
+                for (int i = 0; i < 20; i++) {
+                    count++;
+                    k++;
+                    System.out.println(currentThread().getName() + " k=" + k + "    count=" + count + "      lock");
+                }
+            } finally {
+                lock.unlock();
             }
-            lock.unlock();
         }
     }
 
