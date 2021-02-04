@@ -5,17 +5,22 @@ import java.util.concurrent.locks.ReentrantLock;
 public class IncrementSuper {
 
     private static int count;
-    private static Lock lock = new ReentrantLock();
-    private static Semaphore sem = new Semaphore(4);  // семафор задає ресурс для потоку, але якщо присутні інші потоки яким семафор не заданий то послідовність виконання не гарантується
+    private static final Lock lock = new ReentrantLock();
+    private static final Semaphore sem = new Semaphore(1);  // семафор задає ресурс для потоку, але якщо присутні інші потоки яким семафор не заданий то послідовність виконання не гарантується
+
+    public static void main(String[] args) throws InterruptedException {
+        // краще видно якщо лишити лише один метод для виконання
+//        runSimple();
+//        runWithJoinSynchronized();
+//        runSynchronized();
+//        runWithLock();
+        runWithSemaphore();
+    }
 
     private static void runWithSemaphore() {
-
-        IncrementingWithSemaphore in1 = new IncrementingWithSemaphore();
-        IncrementingWithSemaphore in2 = new IncrementingWithSemaphore();
-        in1.sem = sem;
-        in2.sem = sem;
-        in1.start();
-        in2.start();
+        new IncrementingWithSemaphore().start();
+        new IncrementingWithSemaphore().start();
+        new IncrementingWithSemaphore().start();
     }
 
     private static void runSimple() {
@@ -33,6 +38,7 @@ public class IncrementSuper {
     private static void runWithLock() {
         new IncrementingWithLock().start(); // лок гарантує що поки один потік не закінчить роботу з методом - інший цей метод рухати не буде
         new IncrementingWithLock().start();
+        new IncrementingWithLock().start();
     }
 
     private static void runSynchronized() {
@@ -40,17 +46,7 @@ public class IncrementSuper {
         new SynchronizedIncrementing().start();
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        // краще видно якщо лишити лише один метод для виконання
-//        runSimple();
-//        runWithJoinSynchronized();
-//        runSynchronized();
-//        runWithLock();
-        runWithSemaphore();
-    }
-
     static class IncrementingWithSemaphore extends Thread {
-        Semaphore sem;
         int k = 0;
 
         @Override
@@ -62,9 +58,10 @@ public class IncrementSuper {
                     k++;
                     System.out.println(currentThread().getName() + " k=" + k + "    count=" + count + "      sem");
                 }
-                sem.release();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } finally {
+                sem.release();
             }
         }
     }
