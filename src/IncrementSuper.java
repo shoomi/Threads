@@ -1,12 +1,18 @@
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.IntStream;
 
 public class IncrementSuper {
 
     private static int count;
     private static final Lock lock = new ReentrantLock();
-    private static final Semaphore sem = new Semaphore(1);  // семафор задає ресурс для потоку, але якщо присутні інші потоки яким семафор не заданий то послідовність виконання не гарантується
+    private static final int permits = 2;
+    private static Semaphore sem = new Semaphore(permits);  // семафор задає ресурс для потоку, але якщо присутні інші потоки яким семафор не заданий то послідовність виконання не гарантується
+    private static volatile AtomicInteger thredNum = new AtomicInteger(0);
+    private static volatile AtomicInteger prevNum = new AtomicInteger(1);
+    private static volatile AtomicInteger countSem = new AtomicInteger(0);
 
     public static void main(String[] args) throws InterruptedException {
         // краще видно якщо лишити лише один метод для виконання
@@ -18,9 +24,9 @@ public class IncrementSuper {
     }
 
     private static void runWithSemaphore() {
-        new IncrementingWithSemaphore().start();
-        new IncrementingWithSemaphore().start();
-        new IncrementingWithSemaphore().start();
+        IntStream.range(1,15).forEach(i -> {
+            new IncrementingWithSemaphore().start();
+        });
     }
 
     private static void runSimple() {
@@ -52,11 +58,17 @@ public class IncrementSuper {
         @Override
         public void run() {
             try {
+                synchronized (IncrementingWithSemaphore.class) {
+                    if (thredNum.incrementAndGet() > prevNum.get() && permits >1) {
+                        prevNum.set(thredNum.get());
+                            Thread.sleep(1500);
+                    }
+                }
                 sem.acquire();
-                for (int i = 0; i < 20; i++) {
-                    count++;
-                    k++;
-                    System.out.println(currentThread().getName() + " k=" + k + "    count=" + count + "      sem");
+                for (int i = 0; i < 1; i++) {
+                    countSem.incrementAndGet();
+                    Thread.sleep(4000);
+                    System.out.println(currentThread().getName() + "    count=" + countSem.get() + "      sem");
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
